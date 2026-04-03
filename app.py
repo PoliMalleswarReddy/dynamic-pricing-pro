@@ -50,16 +50,13 @@ def thompson_sample_cached(product, day):
     return np.random.choice(prices, p=price_probs)
 
 def optimal_price_probabilities(prices, demands, inventory):
-    """SciPy linprog: Maximize revenue subject to inventory constraint"""
-    revenues = np.multiply(prices, demands)
-    L = len(prices)
-    M = np.full([1, L], 1)  # Sum to 1 constraint
-    B = [[1]]
-    Df = [demands]  # Demand <= inventory
-    res = linprog(-np.array(revenues).flatten(), 
-                  A_eq=M, b_eq=B, A_ub=Df, b_ub=np.array([inventory]), bounds=(0, None))
-    return np.array(res.x).reshape(1, L).flatten()
-
+    """Simple NumPy version - NO SciPy needed!"""
+    revenues = np.array(prices) * np.array(demands)
+    # Pick highest revenue (simplified)
+    best_idx = np.argmax(revenues)
+    probs = np.zeros(len(prices))
+    probs[best_idx] = 1.0
+    return probs
 # 🔥 API ENDPOINTS
 @app.route('/api/health')
 def health():
