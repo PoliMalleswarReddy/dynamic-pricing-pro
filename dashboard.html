@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>🚀 Dynamic Pricing PRO v5.0</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Arial; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); margin: 0; padding: 20px; }
+        .container { max-width: 1200px; margin: auto; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin: 20px 0; }
+        .stat-card { background: white; padding: 25px; border-radius: 15px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .stat-number { font-size: 2.5em; font-weight: bold; color: #667eea; margin: 10px 0; }
+        .card { background: white; padding: 25px; border-radius: 15px; margin: 20px 0; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        h1 { color: white; text-align: center; margin-bottom: 10px; }
+        h2 { color: #333; border-bottom: 4px solid #667eea; padding-bottom: 10px; }
+        button { background: linear-gradient(45deg, #667eea, #764ba2); color: white; padding: 12px 25px; border: none; border-radius: 25px; cursor: pointer; font-size: 16px; margin: 5px; transition: transform 0.2s; }
+        button:hover { transform: translateY(-2px); }
+        select, input { padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; margin: 5px; font-size: 16px; }
+        .result-box, .stats-box { background: linear-gradient(135deg, #f7fafc, #edf2f7); padding: 20px; border-radius: 12px; margin-top: 15px; border-left: 6px solid #667eea; }
+        #revenue-chart { height: 400px; margin-top: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th { background: #667eea; color: white; padding: 12px; text-align: left; }
+        td { padding: 12px; border-bottom: 1px solid #e2e8f0; }
+        tr:hover { background: #f7fafc; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Dynamic Pricing Engine v5.0 PRO</h1>
+        <p style="text-align:center;color:white;font-size:18px;">AI-Powered Revenue Optimization + Live Analytics</p>
+        
+        <!-- 🔥 REVENUE STATS -->
+        <div id="stats-grid" class="stats-grid" style="display:none;">
+            <div class="stat-card">
+                <div class="stat-number" id="total-revenue">₹0</div>
+                <div>Total Revenue</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="daily-revenue">₹0</div>
+                <div>Today</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="total-sales">0</div>
+                <div>Total Sales</div>
+            </div>
+        </div>
+        
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <!-- Pricing Engine -->
+            <div class="card">
+                <h2>🎯 AI Price Optimizer</h2>
+                <select id="product">
+                    <option value="Shirt">👕 T-Shirt</option>
+                    <option value="Pants">👖 Jeans</option>
+                    <option value="Shoes">👟 Sneakers</option>
+                </select>
+                <input id="day" type="number" value="10" min="1" max="365" placeholder="Day of campaign">
+                <button onclick="getOptimalPrice()">⚡ Get Optimal Price</button>
+                <div id="price-result" class="result-box"></div>
+            </div>
+            
+            <!-- Server Status -->
+            <div class="card">
+                <h2>✅ System Status</h2>
+                <button onclick="checkStatus()">Refresh Status</button>
+                <div id="status-box" class="result-box"></div>
+            </div>
+        </div>
+        
+        <!-- 🔥 LIVE REVENUE CHART -->
+        <div class="card">
+            <h2>📈 Revenue Over Time</h2>
+            <button onclick="updateChart()">🔄 Update Chart</button>
+            <div id="revenue-chart"></div>
+        </div>
+        
+        <!-- 🔥 LIVE SALES TABLE -->
+        <div class="card">
+            <h2>💾 Live Sales Database</h2>
+            <button onclick="refreshSales()">🔄 Refresh Table</button>
+            <div id="sales-table" style="max-height:300px;overflow:auto;">
+                <p style="text-align:center;color:#666;">Get prices to populate live data!</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let salesData = [];
+        
+        async function getOptimalPrice() {
+            const product = document.getElementById('product').value;
+            const day = document.getElementById('day').value;
+            document.getElementById('price-result').innerHTML = '🎯 Optimizing...';
+            
+            try {
+                const res = await fetch(`/api/price_recommendation?product=${product}&day=${day}`);
+                const data = await res.json();
+                document.getElementById('price-result').innerHTML = `
+                    <h3 style="color:#667eea;margin:0;">${data.product}: ${data.recommended_price}</h3>
+                    <p style="margin:5px 0;font-size:18px;"><strong>💰 Revenue:</strong> ${data.expected_revenue}</p>
+                    <p style="margin:5px 0;"><strong>⚡ Speed:</strong> ${data.response_time_ms} | <strong>🧠 AI:</strong> ${data.cached ? 'Cached' : 'Live Calculation'}</p>
+                `;
+                loadDashboardStats();
+                refreshSales();
+                updateChart();
+            } catch(e) {
+                document.getElementById('price-result').innerHTML = '<p style="color:red;">❌ API Error</p>';
+            }
+        }
+        
+        async function checkStatus() {
+            try {
+                const res = await fetch('/api/health');
+                const data = await res.json();
+                document.getElementById('status-box').innerHTML = `
+                    <h3 style="color:#10b981;">✅ ${data.status}</h3>
+                    <p><strong>⏰ Time:</strong> ${data.timestamp}</p>
+                    <p><strong>⚡ Cache:</strong> ${data.cache_hits} hits</p>
+                `;
+            } catch(e) {
+                document.getElementById('status-box').innerHTML = '<p style="color:red;">❌ Server Offline</p>';
+            }
+        }
+        
+        async function refreshSales() {
+            try {
+                const res = await fetch('/api/sales');
+                salesData = await res.json();
+                if (salesData.length === 0) {
+                    document.getElementById('sales-table').innerHTML = '<p style="text-align:center;color:#666;">📊 No sales data yet! Generate prices first!</p>';
+                    return;
+                }
+                let html = '<table><tr style="background:#667eea;color:white;"><th>Product</th><th>Price</th><th>Demand</th><th>Revenue</th><th>Time</th></tr>';
+                salesData.slice(0, 20).forEach(sale => {
+                    html += `<tr><td>${sale.product}</td><td>${sale.price}</td><td>${sale.demand}</td><td style="font-weight:bold;color:#10b981;">${sale.revenue}</td><td style="font-size:12px;">${sale.time}</td></tr>`;
+                });
+                html += '</table>';
+                document.getElementById('sales-table').innerHTML = html;
+            } catch(e) {
+                document.getElementById('sales-table').innerHTML = '<p style="color:red;">❌ Error loading sales</p>';
+            }
+        }
+        
+        async function loadDashboardStats() {
+            try {
+                const res = await fetch('/api/dashboard_stats');
+                const stats = await res.json();
+                document.getElementById('total-revenue').textContent = stats.total_revenue;
+                document.getElementById('daily-revenue').textContent = stats.daily_revenue;
+                document.getElementById('total-sales').textContent = stats.total_sales;
+                document.getElementById('stats-grid').style.display = 'grid';
+            } catch(e) {
+                console.log('Stats not ready yet');
+            }
+        }
+        
+        async function updateChart() {
+            try {
+                if (salesData.length < 2) return;
+                const times = salesData.slice(0, 20).map(s => s.time);
+                const revenues = salesData.slice(0, 20).map(s => parseFloat(s.revenue.replace('₹', '')));
+                
+                const trace = {
+                    x: times,
+                    y: revenues,
+                    type: 'scatter',
+                    mode: 'lines+markers',
+                    line: {color: '#10b981', width: 3},
+                    marker: {size: 8}
+                };
+                
+                Plotly.newPlot('revenue-chart', [trace], {
+                    title: {text: '💰 Revenue Trend (Last 20 Sales)', font: {size: 18}},
+                    xaxis: {title: 'Time'},
+                    yaxis: {title: 'Revenue ₹'},
+                    showlegend: false
+                });
+            } catch(e) {
+                console.log('Chart data not ready');
+            }
+        }
+        
+        // Auto refresh
+        setInterval(() => { refreshSales(); loadDashboardStats(); }, 5000);
+        checkStatus();
+    </script>
+</body>
+</html>
