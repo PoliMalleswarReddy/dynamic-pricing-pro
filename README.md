@@ -178,26 +178,5 @@ text
 Max: Σ(Price_i × Demand_i × Probability_i)
 s.t. Σ(Demand_i × Probability_i) ≤ Inventory
 
-text
 
----
-
-## 💼 Business Impact
-Fixed Price: ₹30 × 25 sales = ₹750
-AI Dynamic: ₹35 × 28 sales = ₹980 (+30%)
-1000 sales/day = ₹69,000 extra/month!
-
-text
-
----
-
-## 👨‍💼 Author
-
-**HP**  
-**Chennai, India**  
-*April 3, 2026*  
-**Production Ready** 🏆
-
----
-
-**AI Pricing → Real Revenue → Your Success!** 
+**AI Pricing → Real Revenue →  Success!** 
