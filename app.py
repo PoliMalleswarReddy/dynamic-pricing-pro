@@ -2,7 +2,6 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from functools import lru_cache
 import numpy as np
-from scipy.optimize import linprog
 import time
 import sqlite3
 from datetime import datetime
